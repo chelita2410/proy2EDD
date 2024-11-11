@@ -34,7 +34,7 @@ public class InterfazInteractuar extends javax.swing.JFrame {
         setSize(800, 600);
         setDefaultOperation(EXIT_ON_CLOSE); 
         inicializarInterfaz();
-        initComponents();
+       // initComponents();
     }
     
     private void inicializarInterfaz() {
@@ -59,15 +59,24 @@ public class InterfazInteractuar extends javax.swing.JFrame {
         panel.add(cargarButton);
         panel.add(new JScrollPane(areaInformacion));
         add(panel, BorderLayout.SOUTH);
+         
         
-        viewer = new Viewer(arbol.getGrafo(), Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
-        viewer.enableAutoLayout();
+        //VERIFICAR ESTO DESPUES
+        viewer = arbol.getGrafo().display();
+        viewer.setCloseFramePolicy(Viewer.CloseFramePolicy.HIDE_ONLY);
+       // viewer.enableAutoLayout();
         View view = viewer.addDefaultView(false);
-        add(view, BorderLayout.CENTER);
+        add((Component)view, BorderLayout.CENTER);
         
         viewerPipe = viewer.newViewerPipe();
         viewerPipe.addViewerListener((ViewerListener) this);
         viewerPipe.addSink(viewer.getGraphicGraph());
+        
+        new Thread(() -> {
+            while (loop) {
+                viewerPipe.pump();
+            }
+        }).start();
 
     }
     
@@ -75,8 +84,37 @@ public class InterfazInteractuar extends javax.swing.JFrame {
         arbol.construirGrafo();
         viewer.getGraphicGraph().clear();
         
+        for (Nodo nodo : arbol.getRaiz().getHijos()) {
+            agregarNodoYConexiones(nodo);
+        }
+        
     }
+    
+    private void agregarNodoYConexiones(Nodo nodo) {
+        viewer.getGraphicGraph().addNode(nodo.getNombreCompleto()).setAttribute("ui.label", nodo.getNombreCompleto());
+        if (nodo.getPadre() != null) {
+            viewer.getGraphicGraph().addEdge(nodo.getPadre().getNombreCompleto() + "-" + nodo.getNombreCompleto(), nodo.getPadre().getNombreCompleto(), nodo.getNombreCompleto(), true);
+        }
+        for (Nodo hijo : nodo.getHijos()) {
+            agregarNodoYConexiones(hijo);
+        } 
+    }
+    
+    public void viewCloser(String viewName) {
+        loop = false;
+    }
+    
+    public void buttonPushed(String id) {
+        Nodo nodo = arbol.buscarNodoPorNombre(id);
+        if (nodo != null) {
+            areaInformacion.setText(nodo.mostrarInformacion());
+        }
+    }
+    
 
+
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
