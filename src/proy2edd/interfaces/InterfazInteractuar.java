@@ -3,18 +3,78 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package proy2edd.interfaces;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import org.graphstream.ui.view.Viewer;
+import org.graphstream.ui.view.ViewerPipe;
+import org.graphstream.ui.view.ViewerListener;
+import proy2edd.Arbol;
+import proy2edd.HashTable;
+import proy2edd.Nodo;
+import proy2edd.Proy2EDD;
 
 /**
  *
  * @author chela
  */
 public class InterfazInteractuar extends javax.swing.JFrame {
+    private Arbol arbol;
+    private JTextArea areaInformacion;
+    private Viewer viewer;
+    private ViewerPipe viewerPipe;
+    private boolean loop = true;
 
     /**
      * Creates new form InterfazInteractuar
      */
     public InterfazInteractuar() {
+        setTitle("Visor de Arboles Genealogicos");
+        setSize(800, 600);
+        setDefaultOperation(EXIT_ON_CLOSE); 
+        inicializarInterfaz();
         initComponents();
+    }
+    
+    private void inicializarInterfaz() {
+        JPanel panel = new JPanel();
+        JButton cargarButton = new JButton("Cargar Arbol Genealogico");
+        areaInformacion = new JTextArea(10, 40);
+        areaInformacion.setEditable(false);
+        arbol = new Arbol(areaInformacion); //inicializa el arbol
+        
+        cargarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                    String filePath = fileChooser.getSelectedFile().getPath();
+                    arbol.cargarDesdeJSON(filePath);
+                    construirGrafo();
+                }
+            }
+        });
+        
+        panel.add(cargarButton);
+        panel.add(new JScrollPane(areaInformacion));
+        add(panel, BorderLayout.SOUTH);
+        
+        viewer = new Viewer(arbol.getGrafo(), Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+        viewer.enableAutoLayout();
+        View view = viewer.addDefaultView(false);
+        add(view, BorderLayout.CENTER);
+        
+        viewerPipe = viewer.newViewerPipe();
+        viewerPipe.addViewerListener((ViewerListener) this);
+        viewerPipe.addSink(viewer.getGraphicGraph());
+
+    }
+    
+    private void construirGrafo() {
+        arbol.construirGrafo();
+        viewer.getGraphicGraph().clear();
+        
     }
 
     /**
@@ -28,6 +88,10 @@ public class InterfazInteractuar extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        fileChooser = new javax.swing.JFileChooser();
+        cargarButton = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -38,6 +102,14 @@ public class InterfazInteractuar extends javax.swing.JFrame {
         jLabel1.setFont(new java.awt.Font("Kokonor", 0, 18)); // NOI18N
         jLabel1.setText("Registro de Linajes");
         getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 10, -1, -1));
+
+        jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+        getContentPane().add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 100, -1, -1));
+        getContentPane().add(fileChooser, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 50, 540, 220));
+
+        cargarButton.setText("Cargar Arbol");
+        getContentPane().add(cargarButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(450, 290, -1, -1));
+        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 590, 440));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -78,7 +150,15 @@ public class InterfazInteractuar extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton cargarButton;
+    private javax.swing.JFileChooser fileChooser;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
+
+    private void setDefaultOperation(int EXIT_ON_CLOSE) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }
