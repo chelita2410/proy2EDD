@@ -11,9 +11,7 @@ import org.graphstream.ui.view.Viewer;
 import org.graphstream.ui.view.ViewerPipe;
 import org.graphstream.ui.view.ViewerListener;
 import proy2edd.Arbol;
-import proy2edd.HashTable;
 import proy2edd.Nodo;
-import proy2edd.Proy2EDD;
 
 /**
  *
@@ -32,12 +30,13 @@ public class InterfazInteractuar extends javax.swing.JFrame {
     public InterfazInteractuar() {
         setTitle("Visor de Arboles Genealogicos");
         setSize(800, 600);
-        setDefaultOperation(EXIT_ON_CLOSE); 
+        setDefaultCloseOperation(EXIT_ON_CLOSE); 
         inicializarInterfaz();
-       // initComponents();
+        initComponents();
     }
     
     private void inicializarInterfaz() {
+        System.setProperty("org.graphstream.ui", "swing");
         JPanel panel = new JPanel();
         JButton cargarButton = new JButton("Cargar Arbol Genealogico");
         areaInformacion = new JTextArea(10, 40);
@@ -65,13 +64,46 @@ public class InterfazInteractuar extends javax.swing.JFrame {
         viewer = arbol.getGrafo().display();
         viewer.setCloseFramePolicy(Viewer.CloseFramePolicy.HIDE_ONLY);
        // viewer.enableAutoLayout();
-        View view = viewer.addDefaultView(false);
-        add((Component)view, BorderLayout.CENTER);
-        
+       // View view = viewer.addDefaultView(false);
+       // Component view = viewer.getDefaultView();
+       // add(view, BorderLayout.CENTER);
+       viewer = arbol.getGrafo().display();
+       viewer.setCloseFramePolicy(Viewer.CloseFramePolicy.HIDE_ONLY);
+       viewer.getGraphicGraph().setAttribute("ui.stylesheet", "node { fill-color: red; }");
+       System.out.println("InterfazInteractuar es instancia de ViewerListener:" + (this instanceof ViewerListener));
         viewerPipe = viewer.newViewerPipe();
-        viewerPipe.addViewerListener((ViewerListener) this);
+        viewerPipe.addViewerListener(new ViewerListener() {
+            @Override
+            public void viewClosed(String viewName) {
+                loop  = false;
+            }
+            @Override
+            public void buttonPushed(String id) {
+                Nodo nodo = arbol.buscarNodoPorNombre(id);
+                if (nodo != null) {
+                    areaInformacion.setText(nodo.mostrarInformacion());
+                }
+            }
+            @Override
+            public void buttonReleased(String id) {
+                
+            }
+
+            @Override
+            public void mouseOver(String string) {
+                throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            }
+
+            @Override
+            public void mouseLeft(String string) {
+                throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            }
+        });
+       // viewerPipe.addViewerListener((ViewerListener) this);
         viewerPipe.addSink(viewer.getGraphicGraph());
         
+        
+        //procesa los eventos del clic
         new Thread(() -> {
             while (loop) {
                 viewerPipe.pump();
@@ -100,7 +132,7 @@ public class InterfazInteractuar extends javax.swing.JFrame {
         } 
     }
     
-    public void viewCloser(String viewName) {
+    public void viewClosed(String viewName) {
         loop = false;
     }
     
@@ -109,6 +141,10 @@ public class InterfazInteractuar extends javax.swing.JFrame {
         if (nodo != null) {
             areaInformacion.setText(nodo.mostrarInformacion());
         }
+    }
+    
+    public void buttonReleased(String id) {
+        
     }
     
 
@@ -128,8 +164,8 @@ public class InterfazInteractuar extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         fileChooser = new javax.swing.JFileChooser();
-        cargarButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
+        cargarButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -143,14 +179,34 @@ public class InterfazInteractuar extends javax.swing.JFrame {
 
         jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
         getContentPane().add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 100, -1, -1));
-        getContentPane().add(fileChooser, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 50, 540, 220));
+
+        fileChooser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fileChooserActionPerformed(evt);
+            }
+        });
+        getContentPane().add(fileChooser, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 30, 580, 360));
 
         cargarButton.setText("Cargar Arbol");
-        getContentPane().add(cargarButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(450, 290, -1, -1));
-        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 590, 440));
+        cargarButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cargarButtonActionPerformed(evt);
+            }
+        });
+        jScrollPane1.setViewportView(cargarButton);
+
+        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(460, 400, 110, 30));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void fileChooserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileChooserActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_fileChooserActionPerformed
+
+    private void cargarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cargarButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cargarButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -196,7 +252,7 @@ public class InterfazInteractuar extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 
-    private void setDefaultOperation(int EXIT_ON_CLOSE) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+   // public void setDefaultCloseOperation(int EXIT_ON_CLOSE) {
+   //     throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+   // }
 }
