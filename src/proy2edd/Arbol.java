@@ -9,6 +9,7 @@ import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.SingleGraph;
 import java.io.IOException;
 import javax.swing.JTextArea;
+
 /**
  *
  * @author chela
@@ -17,9 +18,13 @@ public class Arbol {
     private Nodo raiz;
     private Graph grafo;
     private JTextArea areaInformacion;
+    private HashTable tabla;
     
     public Arbol() {
         this.grafo = new SingleGraph("Árbol Genealógico");
+        grafo.setAttribute("ui.stylesheet", "node { fill-color: grey; size: 25px; }"); //copiado del proy anterior
+        this.areaInformacion = areaInformacion;
+        this.tabla = new HashTable(100); //capacidad inicial de la hashtable
     }
     
     public Nodo getRaiz() {
@@ -61,18 +66,18 @@ public class Arbol {
     
     private Nodo procesarRegistro(String registro) {
         String nombre = obtenerValorDe(registro, "\"", "\":[");
-        Nodo nodo = new Nodo(nombre, null, null, null);
-        nodo.setMote(obtenerValorDe(registro, "\"Known throughout as\":\"", "\""));
-        nodo.setTitulo(obtenerValorDe(registro, "\"Held title\":\"", "\""));
-        nodo.setPadre(obtenerValorDe(registro, "\"Born to\":\"", "\""));
+        Nodo nodo = new Nodo(nombre, obtenerValorDe(registro, "\"Known throughout as\":\"", "\""), obtenerValorDe(registro, "\"Held title\":\"", "\""), obtenerValorDe(registro, "\"Born to\":\"", "\""));
+        //nodo.setMote(obtenerValorDe(registro, "\"Known throughout as\":\"", "\""));
+        //nodo.setTitulo(obtenerValorDe(registro, "\"Held title\":\"", "\""));
+        //nodo.setPadre(obtenerValorDe(registro, "\"Born to\":\"", "\""));
         String hijosStr = obtenerValorDe(registro, "\"Father to\":[", "]");
         if (hijosStr != null) {
             String[] hijos = hijosStr.replaceAll("\"", "").split(",");
             for (String hijo : hijos) {
-                nodo.agregarHijo(hijo.trim());  
+                nodo.agregarHijo(new Nodo(hijo.trim(), null, null, nombre));  
             } 
         }
-        //areaInformacion.append("Nodo cargado: " + nombre + "\n");
+        areaInformacion.append("Nodo cargado: " + nombre + "\n");
         return nodo;
     }
     
@@ -93,10 +98,15 @@ public class Arbol {
         if (raiz == null) {
             raiz = nodo;
         } else {
-            Nodo padre = buscarNodoPorNombre(nodo.getPadre());
+            Nodo padre = buscarNodoPorNombre(nodo.getPadreNombre());
             if (padre != null) {
                 padre.agregarHijo(nodo);
+                nodo.setPadre(padre);
             }
+        }
+        tabla.agregar(nodo.getNombreCompleto(), nodo); //agrefa a la hashtable
+        if (nodo.getMote() != null) {
+            tabla.agregar(nodo.getMote(), nodo); //agrega por mote
         }
     }
     
@@ -120,9 +130,9 @@ public class Arbol {
     }
     
     public Nodo buscarNodoPorNombre(String nombre) {
-        return buscarNodoPorNombreRecursivo(raiz, nombre);
+        return tabla.buscar(nombre);
     }
-    
+    /**
     private Nodo buscarNodoPorNombreRecursivo(Nodo nodo, String nombre) {
         if (nodo == null) {
             return null;
@@ -139,4 +149,21 @@ public class Arbol {
         return null;
     }
     
+    //grafo.display(true);
+    */
+    
+    public MiLista getTodosLosNodos() {
+        MiLista nodos = new MiLista();
+        collectAllNodes(raiz, nodos);
+        return nodos;
+    }
+    
+    private void collectAllNodes(Nodo nodo, MiLista nodos) {
+        if (nodo != null) {
+            nodos.add(nodo);
+            for (Nodo hijo : nodo.getHijos()) {
+                collectAllNodes(hijo, nodos);
+            }
+        }
+    }
 }

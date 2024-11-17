@@ -3,154 +3,168 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package proy2edd.interfaces;
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import org.graphstream.graph.Graph;
+import org.graphstream.graph.Node;
+import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.ui.swing_viewer.ViewPanel;
 import org.graphstream.ui.view.Viewer;
 import org.graphstream.ui.view.ViewerPipe;
 import org.graphstream.ui.view.ViewerListener;
 import proy2edd.Arbol;
+import proy2edd.MiLista;
 import proy2edd.Nodo;
-
 /**
  *
  * @author chela
  */
 public class InterfazInteractuar extends javax.swing.JFrame {
+    private JTextArea infoTextArea;
     private Arbol arbol;
-    private JTextArea areaInformacion;
-    private Viewer viewer;
+    private JPanel graphPanel;
     private ViewerPipe viewerPipe;
+    private Graph grafo;
+    private Viewer viewer;
     private boolean loop = true;
+            
 
     /**
      * Creates new form InterfazInteractuar
      */
     public InterfazInteractuar() {
-        setTitle("Visor de Arboles Genealogicos");
-        setSize(800, 600);
-        setDefaultCloseOperation(EXIT_ON_CLOSE); 
-        inicializarInterfaz();
-        initComponents();
-    }
-    
-    private void inicializarInterfaz() {
-        System.setProperty("org.graphstream.ui", "swing");
-        JPanel panel = new JPanel();
-        JButton cargarButton = new JButton("Cargar Arbol Genealogico");
-        areaInformacion = new JTextArea(10, 40);
-        areaInformacion.setEditable(false);
-        arbol = new Arbol(areaInformacion); //inicializa el arbol
+        setTitle("Visor de árboles genealógicos");
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        int xSize = (int) toolkit.getScreenSize().getWidth();
+        int ySize = (int) toolkit.getScreenSize().getHeight();
+        this.setSize(xSize, ySize);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
         
-        cargarButton.addActionListener(new ActionListener() {
+        arbol = new Arbol();
+        
+        JMenuBar menuBar = new JMenuBar();
+        JMenu fileMenu = new JMenu("Archivo JSON");
+        JMenuItem loadMenuItem = new JMenuItem("Cargar árbol genealógico del JSON");
+        fileMenu.add(loadMenuItem);
+        menuBar.add(fileMenu);
+        setJMenuBar(menuBar);
+        
+        infoTextArea = new JTextArea(10, 30);
+        infoTextArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(infoTextArea);
+        add(scrollPane, BorderLayout.EAST);
+        
+        graphPanel = new JPanel(new BorderLayout());
+        add(graphPanel, BorderLayout.CENTER);
+        
+        loadMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JFileChooser fileChooser = new JFileChooser();
-                if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                    String filePath = fileChooser.getSelectedFile().getPath();
-                    arbol.cargarDesdeJSON(filePath);
-                    construirGrafo();
-                }
+                cargarArbolDesdeJSON();
             }
         });
         
-        panel.add(cargarButton);
-        panel.add(new JScrollPane(areaInformacion));
-        add(panel, BorderLayout.SOUTH);
-         
+        //initComponents();
         
-        //VERIFICAR ESTO DESPUES
-        viewer = arbol.getGrafo().display();
-        viewer.setCloseFramePolicy(Viewer.CloseFramePolicy.HIDE_ONLY);
-       // viewer.enableAutoLayout();
-       // View view = viewer.addDefaultView(false);
-       // Component view = viewer.getDefaultView();
-       // add(view, BorderLayout.CENTER);
-       viewer = arbol.getGrafo().display();
-       viewer.setCloseFramePolicy(Viewer.CloseFramePolicy.HIDE_ONLY);
-       viewer.getGraphicGraph().setAttribute("ui.stylesheet", "node { fill-color: red; }");
-       System.out.println("InterfazInteractuar es instancia de ViewerListener:" + (this instanceof ViewerListener));
+    }
+    
+    private void cargarArbolDesdeJSON() {
+        JFileChooser fileChooser = new JFileChooser();
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+            arbol.cargarDesdeJSON(filePath);
+            mostrarGrafo();
+    }
+        }
+
+    private void mostrarGrafo() {
+        graphPanel.removeAll();
+        grafo = new SingleGraph("Árbol Genealógico");
+        grafo.setAttribute("ui.stylesheet", "node { fill-color: lightblue; }");
+        grafo.setAutoCreate(true);
+        grafo.setStrict(false);
+        
+        MiLista nodos = arbol.getTodosLosNodos();
+        for (int i = 0; i < nodos.size(); i++) {
+            Nodo nodo = nodos.get(i);
+            if (grafo.getNode(nodo.getNombreCompleto()) == null) {
+                grafo.addNode(nodo.getNombreCompleto()).setAttribute("ui.label", nodo.getNombreCompleto());   
+            }
+            if (nodo.getPadre() != null) {
+                String padre = nodo.getPadre().getNombreCompleto();
+                String hijo = nodo.getNombreCompleto();
+                if (grafo.getEdge(padre + "-" + hijo) == null && grafo.getEdge(hijo + "-" + padre) == null) {
+                    grafo.addEdge(padre + "-" + hijo, padre, hijo);
+                }
+            }
+         }
+        
+      /**  for (Nodo nodo : arbol.getGrafo()) {
+            if (grafo.getNode(nodo.getNombreCompleto()) == null) {
+                grafo.addNode(nodo.getNombreCompleto()).setAttribute("ui.label", nodo.getNombreCompleto());
+            }
+            if (nodo.getPadre() != null) {
+                String padre = nodo.getPadre().getNombreCompleto();
+                String hijo = nodo.getNombreCompleto();
+                if (grafo.getEdge(padre + "-" + hijo) == null && grafo.getEdge(hijo + "-" + padre) == null) {
+                    grafo.addEdge(padre + "-" + hijo, padre, hijo);
+                }
+            }
+        } */
+        
+        viewer = new Viewer(grafo, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+        viewer.enableAutoLayout();
+        ViewPanel viewPanel = viewPanel = viewer.addDefaultView(false);
+        
+        graphPanel.add(viewPanel, BorderLayout.CENTER);
+        graphPanel.revalidate();
+        graphPanel.repaint();
+        
         viewerPipe = viewer.newViewerPipe();
-        viewerPipe.addViewerListener(new ViewerListener() {
-            @Override
-            public void viewClosed(String viewName) {
-                loop  = false;
-            }
-            @Override
-            public void buttonPushed(String id) {
-                Nodo nodo = arbol.buscarNodoPorNombre(id);
-                if (nodo != null) {
-                    areaInformacion.setText(nodo.mostrarInformacion());
-                }
-            }
-            @Override
-            public void buttonReleased(String id) {
-                
-            }
-
-            @Override
-            public void mouseOver(String string) {
-                throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-            }
-
-            @Override
-            public void mouseLeft(String string) {
-                throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-            }
-        });
-       // viewerPipe.addViewerListener((ViewerListener) this);
-        viewerPipe.addSink(viewer.getGraphicGraph());
+        viewerPipe.addViewerListener((ViewerListener) this);
+        viewerPipe.addSink(grafo);
         
-        
-        //procesa los eventos del clic
-        new Thread(() -> {
+        new Thread (() -> {
             while (loop) {
-                viewerPipe.pump();
+                viewerPipe.pump();   
             }
-        }).start();
+        }).start();   
+    }
 
-    }
-    
-    private void construirGrafo() {
-        arbol.construirGrafo();
-        viewer.getGraphicGraph().clear();
-        
-        for (Nodo nodo : arbol.getRaiz().getHijos()) {
-            agregarNodoYConexiones(nodo);
+    public void buttonPushed(String id) {
+        Nodo nodo = arbol.buscarNodoPorNombre(id);
+        if (nodo != null) {
+            infoTextArea.setText(nodo.mostrarInformacion());
         }
+    }
+
+    public void buttonReleased(String id) {
         
     }
-    
-    private void agregarNodoYConexiones(Nodo nodo) {
-        viewer.getGraphicGraph().addNode(nodo.getNombreCompleto()).setAttribute("ui.label", nodo.getNombreCompleto());
-        if (nodo.getPadre() != null) {
-            viewer.getGraphicGraph().addEdge(nodo.getPadre().getNombreCompleto() + "-" + nodo.getNombreCompleto(), nodo.getPadre().getNombreCompleto(), nodo.getNombreCompleto(), true);
-        }
-        for (Nodo hijo : nodo.getHijos()) {
-            agregarNodoYConexiones(hijo);
-        } 
-    }
-    
+ 
     public void viewClosed(String viewName) {
         loop = false;
     }
     
-    public void buttonPushed(String id) {
-        Nodo nodo = arbol.buscarNodoPorNombre(id);
-        if (nodo != null) {
-            areaInformacion.setText(nodo.mostrarInformacion());
-        }
-    }
-    
-    public void buttonReleased(String id) {
+    public void mouseLeft(String id) {
         
     }
     
-
-
+   
     
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -161,52 +175,23 @@ public class InterfazInteractuar extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
-        fileChooser = new javax.swing.JFileChooser();
         jScrollPane1 = new javax.swing.JScrollPane();
-        cargarButton = new javax.swing.JButton();
+        jTextArea1 = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 100, -1, -1));
+        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(283, 68, -1, -1));
 
-        jLabel1.setFont(new java.awt.Font("Kokonor", 0, 18)); // NOI18N
-        jLabel1.setText("Registro de Linajes");
-        getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 10, -1, -1));
+        jTextArea1.setColumns(20);
+        jTextArea1.setRows(5);
+        jScrollPane1.setViewportView(jTextArea1);
 
-        jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-        getContentPane().add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 100, -1, -1));
-
-        fileChooser.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fileChooserActionPerformed(evt);
-            }
-        });
-        getContentPane().add(fileChooser, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 30, 580, 360));
-
-        cargarButton.setText("Cargar Arbol");
-        cargarButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cargarButtonActionPerformed(evt);
-            }
-        });
-        jScrollPane1.setViewportView(cargarButton);
-
-        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(460, 400, 110, 30));
+        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(77, 146, -1, -1));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void fileChooserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileChooserActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_fileChooserActionPerformed
-
-    private void cargarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cargarButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cargarButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -244,15 +229,8 @@ public class InterfazInteractuar extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton cargarButton;
-    private javax.swing.JFileChooser fileChooser;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables
-
-   // public void setDefaultCloseOperation(int EXIT_ON_CLOSE) {
-   //     throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-   // }
 }

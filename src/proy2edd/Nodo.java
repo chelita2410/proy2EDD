@@ -12,16 +12,17 @@ public class Nodo {
     private String nombreCompleto;
     private String mote;
     private String titulo;
+    private String padreNombre;
     private Nodo padre;
     private Nodo[] hijos;
     private int numHijos;
     
-    public Nodo(String nombreCompleto, String mote, String titulo, Nodo padre) {
+    public Nodo(String nombreCompleto, String mote, String titulo, String padreNombre) {
         this.nombreCompleto = nombreCompleto;
         this.mote = mote;
         this.titulo = titulo;
-        this.padre = padre;
-        this.hijos = new Nodo[10];
+        this.padreNombre = padreNombre;
+        this.hijos = new Nodo[10]; //tamaño inicial, ajustable según las necesidades
         this.numHijos = 0;
     }
     
@@ -29,7 +30,7 @@ public class Nodo {
         return nombreCompleto;
     }
 
-    public void setNombreCompleto(String nombreCompleto) {
+   /** public void setNombreCompleto(String nombreCompleto) {
         this.nombreCompleto = nombreCompleto;
     }
 
@@ -51,15 +52,28 @@ public class Nodo {
 
     public void setNumHijos(int numHijos) {
         this.numHijos = numHijos;
+    } */
+    
+    
+    public void setMote(String mote) {
+        this.mote = mote;
     }
     
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
     
     public String getMote() {
         return mote;
     }
     
+    
     public String getTitulo() {
         return titulo;
+    }
+    
+    public String getPadreNombre() {
+        return padreNombre;
     }
     
     public Nodo getPadre() {
@@ -72,6 +86,10 @@ public class Nodo {
     
     public int getNumHijos() {
         return numHijos;
+    }
+    
+    public void setPadre(Nodo padre) {
+        this.padre = padre;
     }
     
     public void agregarHijo(Nodo hijo) {
@@ -92,14 +110,21 @@ public class Nodo {
     public String mostrarInformacion() {
         StringBuilder info = new StringBuilder();
         info.append("Nombre: ").append(nombreCompleto).append("\n");
-        info.append("Mote: ").append(mote).append("\n");
-        info.append("Título: ").append(titulo).append("\n");
+        if (mote != null) {
+            info.append("Mote: ").append(mote).append("\n");
+        }
+        if (titulo != null) {
+            info.append("Título: ").append(titulo).append("\n");
+        }
         if (padre != null) {
             info.append("Padre: ").append(padre.getNombreCompleto()).append("\n");
         }
         info.append("Hijos: ");
         for (int i = 0; i < numHijos; i++) {
-            info.append(hijos[i].getNombreCompleto()).append(", ");
+            info.append(hijos[i].getNombreCompleto());
+            if (i < numHijos - 1) {
+                info.append(", ");
+            }
         }
         return info.toString();
     }
