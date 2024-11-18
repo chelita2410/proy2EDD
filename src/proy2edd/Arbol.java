@@ -16,24 +16,25 @@ import javax.swing.JTextArea;
  */
 public class Arbol {
     private Nodo raiz;
-    private Graph grafo;
+   // private Graph grafo;
     private JTextArea areaInformacion;
     private HashTable tabla;
     
     public Arbol() {
-        this.grafo = new SingleGraph("Árbol Genealógico");
-        grafo.setAttribute("ui.stylesheet", "node { fill-color: grey; size: 25px; }"); //copiado del proy anterior
+      // this.grafo = new SingleGraph("Árbol Genealógico");
+      //  grafo.setAttribute("ui.stylesheet", "node { fill-color: grey; size: 25px; }"); //copiado del proy anterior
         this.areaInformacion = areaInformacion;
+        this.raiz = null;
         this.tabla = new HashTable(100); //capacidad inicial de la hashtable
     }
     
     public Nodo getRaiz() {
         return raiz;
     }
-    
+    /**
     public Graph getGrafo() {
         return grafo;
-    }
+    } */
     
     public void cargarJSON(String nombreArchivo) {
         StringBuilder contenido = new StringBuilder();
@@ -51,7 +52,7 @@ public class Arbol {
     
     public void cargarDesdeJSON(String json) {
         String nombreCasa = obtenerValorDe(json, "\"House ", "\":[");
-        areaInformacion.append("Cargando árbol para la casa: " + nombreCasa);
+        areaInformacion.append("Cargando árbol para la casa: " + nombreCasa + "\n");
         String[] registros = json.split("\\}, \\{");
         for (String registro : registros) {
             Nodo nodo = procesarRegistro(registro);
@@ -61,7 +62,7 @@ public class Arbol {
                 agregarNodoAlArbol(nodo);
             }
         }
-        construirGrafo();
+      //  construirGrafo();
     }
     
     private Nodo procesarRegistro(String registro) {
@@ -109,7 +110,7 @@ public class Arbol {
             tabla.agregar(nodo.getMote(), nodo); //agrega por mote
         }
     }
-    
+    /**
     public void construirGrafo() {
         grafo.clear();
         agregarNodoAlGrafo(raiz);
@@ -127,7 +128,7 @@ public class Arbol {
         for (Nodo hijo : nodo.getHijos()) {
             agregarNodoAlGrafo(hijo);
         }
-    }
+    } */
     
     public Nodo buscarNodoPorNombre(String nombre) {
         return tabla.buscar(nombre);

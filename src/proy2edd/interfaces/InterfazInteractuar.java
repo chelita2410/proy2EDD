@@ -25,18 +25,21 @@ import org.graphstream.ui.view.ViewerListener;
 import proy2edd.Arbol;
 import proy2edd.MiLista;
 import proy2edd.Nodo;
+import proy2edd.VisualizarGrafoCasas;
 /**
  *
  * @author chela
  */
-public class InterfazInteractuar extends javax.swing.JFrame {
+public class InterfazInteractuar extends javax.swing.JFrame implements ViewerListener {
     private JTextArea infoTextArea;
     private Arbol arbol;
     private JPanel graphPanel;
-    private ViewerPipe viewerPipe;
-    private Graph grafo;
-    private Viewer viewer;
-    private boolean loop = true;
+    private VisualizarGrafoCasas visualizeGraph;
+    //private ViewerPipe viewerPipe;
+    
+    //private Graph grafo;
+   // private Viewer viewer;
+   // private boolean loop = true;
             
 
     /**
@@ -90,7 +93,15 @@ public class InterfazInteractuar extends javax.swing.JFrame {
         }
 
     private void mostrarGrafo() {
+        visualizeGraph.construirGrafo(arbol);
         graphPanel.removeAll();
+        ViewPanel viewPanel = visualizeGraph.getGraphView();
+        graphPanel.add(viewPanel, BorderLayout.CENTER);
+        visualizeGraph.addViewerListener(this);
+        graphPanel.revalidate();
+        graphPanel.repaint();
+        
+       /** graphPanel.removeAll();
         grafo = new SingleGraph("Árbol Genealógico");
         grafo.setAttribute("ui.stylesheet", "node { fill-color: lightblue; }");
         grafo.setAutoCreate(true);
@@ -109,7 +120,7 @@ public class InterfazInteractuar extends javax.swing.JFrame {
                     grafo.addEdge(padre + "-" + hijo, padre, hijo);
                 }
             }
-         }
+         } */
         
       /**  for (Nodo nodo : arbol.getGrafo()) {
             if (grafo.getNode(nodo.getNombreCompleto()) == null) {
@@ -124,7 +135,7 @@ public class InterfazInteractuar extends javax.swing.JFrame {
             }
         } */
         
-        viewer = new Viewer(grafo, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+      /**  viewer = new Viewer(grafo, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
         viewer.enableAutoLayout();
         ViewPanel viewPanel = viewPanel = viewer.addDefaultView(false);
         
@@ -140,8 +151,8 @@ public class InterfazInteractuar extends javax.swing.JFrame {
             while (loop) {
                 viewerPipe.pump();   
             }
-        }).start();   
-    }
+        }).start();  */ 
+    } 
 
     public void buttonPushed(String id) {
         Nodo nodo = arbol.buscarNodoPorNombre(id);
@@ -155,12 +166,14 @@ public class InterfazInteractuar extends javax.swing.JFrame {
     }
  
     public void viewClosed(String viewName) {
-        loop = false;
-    }
-    
-    public void mouseLeft(String id) {
         
     }
+    
+    public void mouseLeft(String eventDetails) {
+        
+    }
+    
+    
     
    
     
@@ -233,4 +246,9 @@ public class InterfazInteractuar extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void mouseOver(String string) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }
