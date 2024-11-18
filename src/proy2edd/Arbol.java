@@ -9,6 +9,7 @@ import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.SingleGraph;
 import java.io.IOException;
 import javax.swing.JTextArea;
+import proy2edd.Nodo;
 
 /**
  *
@@ -16,14 +17,12 @@ import javax.swing.JTextArea;
  */
 public class Arbol {
     private Nodo raiz;
-   // private Graph grafo;
     private JTextArea areaInformacion;
     private HashTable tabla;
     
-    public Arbol() {
-      // this.grafo = new SingleGraph("Árbol Genealógico");
-      //  grafo.setAttribute("ui.stylesheet", "node { fill-color: grey; size: 25px; }"); //copiado del proy anterior
+    public Arbol(JTextArea areaInformacion) {
         this.areaInformacion = areaInformacion;
+        System.out.println("Is areaInformacion null? " + (this.areaInformacion == null));
         this.raiz = null;
         this.tabla = new HashTable(100); //capacidad inicial de la hashtable
     }
@@ -31,11 +30,7 @@ public class Arbol {
     public Nodo getRaiz() {
         return raiz;
     }
-    /**
-    public Graph getGrafo() {
-        return grafo;
-    } */
-    
+
     public void cargarJSON(String nombreArchivo) {
         StringBuilder contenido = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new FileReader(nombreArchivo))) {
@@ -51,26 +46,119 @@ public class Arbol {
     }
     
     public void cargarDesdeJSON(String json) {
+        String houseNameKey = "House ";
+        int houseIndex = json.indexOf(houseNameKey);
+        if (houseIndex == -1) {
+            areaInformacion.append("No se encontró el nombre de la casa en el JSON.\n");
+            return;
+        }
+        int colonIndex = json.indexOf(":", houseIndex);
+        String houseName = json.substring(houseIndex + houseNameKey.length(), colonIndex);
+        areaInformacion.append("Cargando árbol para la casa: " + houseName + "\n");
+        
+        String houseData = json.substring(colonIndex + 1).trim();
+        houseData = houseData.substring(1, houseData.length() - 1);
+        
+        String[] characterEntries = houseData.split("\\},\\{");
+        for (String entry : characterEntries) {
+            entry = entry.replace("{", "").replace("}", "").trim();
+            processCharacter(entry);
+        }
+}
+        
+        private void processCharacter(String entry) {
+        int nameStart = entry.indexOf("\"");
+        int nameEnd = entry.indexOf("\":");
+        if (nameStart == -1 || nameEnd == -1) {
+            areaInformacion.append("No se encontró el nombre del personaje en el registro.\n");
+            return;
+        }
+        String characterName = entry.substring(nameStart + 1, nameEnd).trim();
+        Nodo nodo = new Nodo(characterName, null, null, null);
+        
+        String[] attributes = entry.substring(nameEnd + 2).split(",");
+        for (String attribute : attributes) {
+            processAttribute(nodo, attribute.trim());
+        }
+        if (raiz == null) {
+            raiz = nodo;
+        } else {
+            agregarNodoAlArbol(nodo);
+            
+        }
+        areaInformacion.append("Nodo cargado: " + characterName + "\n");
+        /** System.out.println("JSON received:\n" + json);
         String nombreCasa = obtenerValorDe(json, "\"House ", "\":[");
+        if (nombreCasa == null) {
+            areaInformacion.append("No se pudo cargar el nombre de la casa.\n");
+        }
         areaInformacion.append("Cargando árbol para la casa: " + nombreCasa + "\n");
         String[] registros = json.split("\\}, \\{");
         for (String registro : registros) {
             Nodo nodo = procesarRegistro(registro);
+            if (nodo == null) {
+                continue;
+            }
             if (raiz == null) {
                 raiz = nodo;
             } else {
                 agregarNodoAlArbol(nodo);
             }
-        }
-      //  construirGrafo();
+        } */
     }
+        
+        private void processAttribute(Nodo nodo, String attribute) {
+            if (attribute.contains(":")) {
+                String key = attribute.substring(0, attribute.indexOf(":")).replace("\"", "").trim();
+                String value = attribute.substring(attribute.indexOf(":") + 1).replace("\"", "").trim();
+                
+                switch (key) {
+                    case "Known throughout as":
+                        nodo.setMote(value);
+                        break;
+                    case "Held title":
+                        nodo.setTitulo(value);
+                        break;
+                    case "Born to":
+                        nodo.setPadreNombre(value);
+                        break;
+                    case "Father to":
+                        value = value.replace("[", "").replace("]", "").trim();
+                        if (!value.isEmpty()) {
+                            String[] children = value.split(",");
+                            for (String child : children) {
+                                nodo.agregarHijo(new Nodo(child.trim(), null, null, nodo.getNombreCompleto()));
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
     
     private Nodo procesarRegistro(String registro) {
-        String nombre = obtenerValorDe(registro, "\"", "\":[");
+        String nombre = obtenerValorDe(registro, "\"Known throughtout as\":\"", "\"");
+        if (nombre == null) {
+            areaInformacion.append("Nodo sin nombre encontrado.\n");
+            return null;
+        }
+        String titulo = obtenerValorDe(registro, "\"Held title\":\"", "\"");
+        String padreNombre = obtenerValorDe(registro, "\"Born to\":\"", "\"");
+        Nodo nodo = new Nodo(nombre, null, titulo, padreNombre);
+        
+        String hijosStr = obtenerValorDe(registro, "\"Father to\":\"", "\"");
+        if (hijosStr != null) {
+            String[] hijos = hijosStr.replaceAll("\"", "").split(",");
+            for (String hijo : hijos) {
+                nodo.agregarHijo(new Nodo(hijo.trim(), null, null, nombre));    
+            }   
+        }
+        areaInformacion.append("Nodo cargado: " + nombre + "\n");
+        return nodo;
+    }
+       /** String nombre = obtenerValorDe(registro, "\"", "\":[");
         Nodo nodo = new Nodo(nombre, obtenerValorDe(registro, "\"Known throughout as\":\"", "\""), obtenerValorDe(registro, "\"Held title\":\"", "\""), obtenerValorDe(registro, "\"Born to\":\"", "\""));
-        //nodo.setMote(obtenerValorDe(registro, "\"Known throughout as\":\"", "\""));
-        //nodo.setTitulo(obtenerValorDe(registro, "\"Held title\":\"", "\""));
-        //nodo.setPadre(obtenerValorDe(registro, "\"Born to\":\"", "\""));
         String hijosStr = obtenerValorDe(registro, "\"Father to\":[", "]");
         if (hijosStr != null) {
             String[] hijos = hijosStr.replaceAll("\"", "").split(",");
@@ -80,16 +168,18 @@ public class Arbol {
         }
         areaInformacion.append("Nodo cargado: " + nombre + "\n");
         return nodo;
-    }
+    } */
     
     private String obtenerValorDe(String texto, String inicio, String fin) {
         int indiceInicio = texto.indexOf(inicio);
         if (indiceInicio == -1) {
+            System.out.println("Key not found: " + inicio);
             return null;
         }
         indiceInicio += inicio.length();
         int indiceFin = texto.indexOf(fin, indiceInicio);
         if (indiceFin == -1) {
+            System.out.println("Ending delimiter not found for key: " + inicio);
             return null;
         }
         return texto.substring(indiceInicio, indiceFin);
@@ -110,49 +200,11 @@ public class Arbol {
             tabla.agregar(nodo.getMote(), nodo); //agrega por mote
         }
     }
-    /**
-    public void construirGrafo() {
-        grafo.clear();
-        agregarNodoAlGrafo(raiz);
-    }
-    
-    private void agregarNodoAlGrafo(Nodo nodo) {
-        if (nodo == null) {
-            return;
-        }
-        grafo.addNode(nodo.getNombreCompleto()).setAttribute("ui.label", nodo.getNombreCompleto());
-        if (nodo.getPadre() != null) {
-            String idPadre = nodo.getPadre().getNombreCompleto();
-            grafo.addEdge(idPadre + "-" + nodo.getNombreCompleto(), idPadre, nodo.getNombreCompleto(), true);
-        }
-        for (Nodo hijo : nodo.getHijos()) {
-            agregarNodoAlGrafo(hijo);
-        }
-    } */
-    
+
     public Nodo buscarNodoPorNombre(String nombre) {
         return tabla.buscar(nombre);
     }
-    /**
-    private Nodo buscarNodoPorNombreRecursivo(Nodo nodo, String nombre) {
-        if (nodo == null) {
-            return null;
-        }
-        if (nodo.getNombreCompleto().equals(nombre)) {
-            return nodo;
-        }
-        for (Nodo hijo : nodo.getHijos()) {
-            Nodo encontrado = buscarNodoPorNombreRecursivo(hijo, nombre);
-            if (encontrado != null) {
-                return encontrado;
-            }
-        }
-        return null;
-    }
-    
-    //grafo.display(true);
-    */
-    
+ 
     public MiLista getTodosLosNodos() {
         MiLista nodos = new MiLista();
         collectAllNodes(raiz, nodos);
