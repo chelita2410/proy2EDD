@@ -45,9 +45,10 @@ public class InterfazInteractuar extends javax.swing.JFrame  {
     private JButton botonBuscar;
     private JButton botonCargar;
     private Arbol arbol;
+    private JScrollPane scroll;
    // private JPanel graphPanel;
  //   private VisualizarGrafoCasas visualizeGraph;
-    private Component scroll;
+   // private Component scroll;
 
             
 
@@ -83,6 +84,7 @@ public class InterfazInteractuar extends javax.swing.JFrame  {
         JPanel panelPrincipal = new JPanel();
         panelPrincipal.setLayout(new BorderLayout());
         panelPrincipal.add(panelSuperior, BorderLayout.NORTH);
+        JScrollPane scroll = new JScrollPane();
         panelPrincipal.add(scroll, BorderLayout.CENTER);
         
         add(panelPrincipal);

@@ -24,9 +24,9 @@ public class MiLista {
         nodos[size++] = nodo;
     }
     
-    public Nodo get(int indice) {
-        if (indice >= 0 && indice < size) {
-            return nodos[indice];
+    public Nodo get(int index) {
+        if (index >= 0 && index < size) {
+            return nodos[index];
         }
         return null; 
     }

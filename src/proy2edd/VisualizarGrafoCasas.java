@@ -52,11 +52,6 @@ public class VisualizarGrafoCasas {
         viewer = grafo.display(false);
         viewer.enableAutoLayout();
         return (ViewPanel) viewer.addDefaultView(false);
-      //  Viewer viewer = grafo.display();
-      //  ViewPanel viewPanel = (ViewPanel) viewer.getDefaultView();
-        //viewer = new Viewer(grafo, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
-       // viewer.enableAutoLayout();
-       // return viewer;
     }
     
     public void addViewerListener(ViewerListener listener) {

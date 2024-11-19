@@ -33,7 +33,7 @@ public class HashTable {
         }
         int indice = hash(clave);
         while (tabla[indice] != null) {
-            if (tabla[indice].getNombreCompleto().equals(clave) || (tabla[indice].getMote() != null && tabla[indice].getMote().equals(clave))) {
+            if (tabla[indice].getNombreCompleto().equals(clave)) { // || (tabla[indice].getMote() != null && tabla[indice].getMote().equals(clave))) {
                 return; //no agregar duplicados
             }
             indice = (indice + 1) % capacidad; //resolucion de colision por desplazamiento lineal
@@ -46,7 +46,7 @@ public class HashTable {
         int indice = hash(clave);
         int intentos = 0;
         while (tabla[indice] != null && intentos < capacidad) {
-            if (tabla[indice].getNombreCompleto().equals(clave) || (tabla[indice].getMote() != null && tabla[indice].getMote().equals(clave))) {
+            if (tabla[indice].getNombreCompleto().equals(clave)) {// || (tabla[indice].getMote() != null && tabla[indice].getMote().equals(clave))) {
                 return tabla[indice];
             }
             indice = (indice + 1) % capacidad;

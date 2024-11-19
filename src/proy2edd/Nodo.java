@@ -30,31 +30,6 @@ public class Nodo {
         return nombreCompleto;
     }
 
-   /** public void setNombreCompleto(String nombreCompleto) {
-        this.nombreCompleto = nombreCompleto;
-    }
-
-    public void setMote(String mote) {
-        this.mote = mote;
-    }
-
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
-    }
-
-    public void setPadre(Nodo padre) {
-        this.padre = padre;
-    }
-
-    public void setHijos(Nodo[] hijos) {
-        this.hijos = hijos;
-    }
-
-    public void setNumHijos(int numHijos) {
-        this.numHijos = numHijos;
-    } */
-    
-    
     public void setMote(String mote) {
         this.mote = mote;
     }
@@ -90,6 +65,10 @@ public class Nodo {
     
     public void setPadre(Nodo padre) {
         this.padre = padre;
+    }
+    
+    public void setPadreNombre(String padreNombre) {
+        this.padreNombre = padreNombre;
     }
     
     public void agregarHijo(Nodo hijo) {
