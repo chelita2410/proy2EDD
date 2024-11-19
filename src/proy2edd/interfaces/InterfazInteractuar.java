@@ -4,17 +4,24 @@
  */
 package proy2edd.interfaces;
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileReader;
+import java.io.IOException;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
@@ -22,6 +29,8 @@ import org.graphstream.ui.swing_viewer.ViewPanel;
 import org.graphstream.ui.view.Viewer;
 import org.graphstream.ui.view.ViewerPipe;
 import org.graphstream.ui.view.ViewerListener;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import proy2edd.Arbol;
 import proy2edd.MiLista;
 import proy2edd.Nodo;
@@ -30,16 +39,16 @@ import proy2edd.VisualizarGrafoCasas;
  *
  * @author chela
  */
-public class InterfazInteractuar extends javax.swing.JFrame implements ViewerListener {
-    private JTextArea infoTextArea;
+public class InterfazInteractuar extends javax.swing.JFrame  {
+    private JTextArea areaInformacion;
+    private JTextField campoBusqueda;
+    private JButton botonBuscar;
+    private JButton botonCargar;
     private Arbol arbol;
-    private JPanel graphPanel;
-    private VisualizarGrafoCasas visualizeGraph;
-    //private ViewerPipe viewerPipe;
-    
-    //private Graph grafo;
-   // private Viewer viewer;
-   // private boolean loop = true;
+   // private JPanel graphPanel;
+ //   private VisualizarGrafoCasas visualizeGraph;
+    private Component scroll;
+
             
 
     /**
@@ -54,45 +63,113 @@ public class InterfazInteractuar extends javax.swing.JFrame implements ViewerLis
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         
-        arbol = new Arbol();
-        
-        JMenuBar menuBar = new JMenuBar();
-        JMenu fileMenu = new JMenu("Archivo JSON");
-        JMenuItem loadMenuItem = new JMenuItem("Cargar árbol genealógico del JSON");
-        fileMenu.add(loadMenuItem);
-        menuBar.add(fileMenu);
-        setJMenuBar(menuBar);
-        
-        infoTextArea = new JTextArea(10, 30);
-        infoTextArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(infoTextArea);
+        areaInformacion = new JTextArea(20, 50);
+        areaInformacion.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(areaInformacion);
         add(scrollPane, BorderLayout.EAST);
+        campoBusqueda = new JTextField(20);
+        botonBuscar = new JButton("Buscar");
+        botonCargar = new JButton("Cargar JSON");
         
-        graphPanel = new JPanel(new BorderLayout());
-        add(graphPanel, BorderLayout.CENTER);
+        arbol = new Arbol(areaInformacion);
         
-        loadMenuItem.addActionListener(new ActionListener() {
+        JPanel panelSuperior = new JPanel();
+        panelSuperior.setLayout(new FlowLayout());
+        panelSuperior.add(new JLabel("Buscar personaje: "));
+        panelSuperior.add(campoBusqueda);
+        panelSuperior.add(botonBuscar);
+        panelSuperior.add(botonCargar);
+        
+        JPanel panelPrincipal = new JPanel();
+        panelPrincipal.setLayout(new BorderLayout());
+        panelPrincipal.add(panelSuperior, BorderLayout.NORTH);
+        panelPrincipal.add(scroll, BorderLayout.CENTER);
+        
+        add(panelPrincipal);
+        
+        botonBuscar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                buscarNodo();
+            }
+        });
+        
+        botonCargar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 cargarArbolDesdeJSON();
             }
         });
         
-        //initComponents();
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
+        
+        /* JMenuBar menuBar = new JMenuBar();
+        JMenu fileMenu = new JMenu("Archivo JSON");
+        JMenuItem loadMenuItem = new JMenuItem("Cargar árbol genealógico del JSON");
+        fileMenu.add(loadMenuItem);
+        menuBar.add(fileMenu);
+        setJMenuBar(menuBar);
+        
+       
+        
+        graphPanel = new JPanel(new BorderLayout());
+        add(graphPanel, BorderLayout.CENTER); */
+        
+       /* loadMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cargarArbolDesdeJSON();
+            }
+        }); */
+        
+       //initComponents();
         
     }
     
+    private void buscarNodo() {
+        String nombre = campoBusqueda.getText().trim();
+        if (nombre.isEmpty()) {
+            areaInformacion.append("Por favor introduce un nombre o mote para buscar.\n");
+            return;
+        }
+        
+        Nodo nodo = arbol.buscarNodoPorNombre(nombre);
+        if (nodo != null) {
+            areaInformacion.append("\nInformación del nodo:\n");
+            areaInformacion.append(nodo.mostrarInformacion() + "\n");
+            
+        } else {
+            areaInformacion.append("Nodo con nombre o mote '" + nombre + "' no encontrado.\n");
+        }
+    }
+    
     private void cargarArbolDesdeJSON() {
-        JFileChooser fileChooser = new JFileChooser();
+        JFileChooser selectorArchivo = new JFileChooser();
+        int opcion = selectorArchivo.showOpenDialog(this);
+        if (opcion == JFileChooser.APPROVE_OPTION) {
+            try (FileReader lector = new FileReader(selectorArchivo.getSelectedFile())) {
+                JSONParser parser = new JSONParser();
+                Object obj = parser.parse(lector);
+                arbol.cargarDesdeJSON(obj.toString());
+                areaInformacion.append("Árbol cargado exitosamente.\n");
+            } catch (IOException | ParseException e) {
+                areaInformacion.append("Error al cargar el archivo JSON: " + e.getMessage() + "\n");
+            }
+        }
+    }
+       /* JFileChooser fileChooser = new JFileChooser();
         int result = fileChooser.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
             String filePath = fileChooser.getSelectedFile().getAbsolutePath();
             arbol.cargarDesdeJSON(filePath);
             mostrarGrafo();
     }
-        }
+        } */
 
-    private void mostrarGrafo() {
+  /*  private void mostrarGrafo() {
         visualizeGraph.construirGrafo(arbol);
         graphPanel.removeAll();
         ViewPanel viewPanel = visualizeGraph.getGraphView();
@@ -100,58 +177,6 @@ public class InterfazInteractuar extends javax.swing.JFrame implements ViewerLis
         visualizeGraph.addViewerListener(this);
         graphPanel.revalidate();
         graphPanel.repaint();
-        
-       /** graphPanel.removeAll();
-        grafo = new SingleGraph("Árbol Genealógico");
-        grafo.setAttribute("ui.stylesheet", "node { fill-color: lightblue; }");
-        grafo.setAutoCreate(true);
-        grafo.setStrict(false);
-        
-        MiLista nodos = arbol.getTodosLosNodos();
-        for (int i = 0; i < nodos.size(); i++) {
-            Nodo nodo = nodos.get(i);
-            if (grafo.getNode(nodo.getNombreCompleto()) == null) {
-                grafo.addNode(nodo.getNombreCompleto()).setAttribute("ui.label", nodo.getNombreCompleto());   
-            }
-            if (nodo.getPadre() != null) {
-                String padre = nodo.getPadre().getNombreCompleto();
-                String hijo = nodo.getNombreCompleto();
-                if (grafo.getEdge(padre + "-" + hijo) == null && grafo.getEdge(hijo + "-" + padre) == null) {
-                    grafo.addEdge(padre + "-" + hijo, padre, hijo);
-                }
-            }
-         } */
-        
-      /**  for (Nodo nodo : arbol.getGrafo()) {
-            if (grafo.getNode(nodo.getNombreCompleto()) == null) {
-                grafo.addNode(nodo.getNombreCompleto()).setAttribute("ui.label", nodo.getNombreCompleto());
-            }
-            if (nodo.getPadre() != null) {
-                String padre = nodo.getPadre().getNombreCompleto();
-                String hijo = nodo.getNombreCompleto();
-                if (grafo.getEdge(padre + "-" + hijo) == null && grafo.getEdge(hijo + "-" + padre) == null) {
-                    grafo.addEdge(padre + "-" + hijo, padre, hijo);
-                }
-            }
-        } */
-        
-      /**  viewer = new Viewer(grafo, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
-        viewer.enableAutoLayout();
-        ViewPanel viewPanel = viewPanel = viewer.addDefaultView(false);
-        
-        graphPanel.add(viewPanel, BorderLayout.CENTER);
-        graphPanel.revalidate();
-        graphPanel.repaint();
-        
-        viewerPipe = viewer.newViewerPipe();
-        viewerPipe.addViewerListener((ViewerListener) this);
-        viewerPipe.addSink(grafo);
-        
-        new Thread (() -> {
-            while (loop) {
-                viewerPipe.pump();   
-            }
-        }).start();  */ 
     } 
 
     public void buttonPushed(String id) {
@@ -171,7 +196,7 @@ public class InterfazInteractuar extends javax.swing.JFrame implements ViewerLis
     
     public void mouseLeft(String eventDetails) {
         
-    }
+    } 
     
     
     
@@ -247,8 +272,5 @@ public class InterfazInteractuar extends javax.swing.JFrame implements ViewerLis
     private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables
 
-    @Override
-    public void mouseOver(String string) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+   
 }
