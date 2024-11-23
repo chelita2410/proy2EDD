@@ -167,7 +167,7 @@ public class InterfazInteractuar extends javax.swing.JFrame implements ViewerLis
     private void buscarNodo() {
         String nombre = campoBusqueda.getText().trim();
         if (nombre.isEmpty()) {
-            areaInformacion.append("Por favor introduce un nombre o mote para buscar.\n");
+            areaInformacion.append("Por favor introduce un nombre, mote o título para buscar.\n");
             return;
         }
 
@@ -183,10 +183,18 @@ public class InterfazInteractuar extends javax.swing.JFrame implements ViewerLis
                 areaInformacion.append(nodo.mostrarInformacion() + "\n");
 
             } else {
-                areaInformacion.append("Nodo con nombre o mote '" + nombre + "' no encontrado.\n");
+                nodo = arbol.buscarNodoPorTitulo(nombre);
+            if (nodo != null) {
+                areaInformacion.append("\nInformación del nodo:\n");
+                areaInformacion.append(nodo.mostrarInformacion() + "\n");
+                
+            } else {
+                areaInformacion.append("Nodo con nombre, mote o título '" + nombre + "' no encontrado.\n");
             }
+            
         }
         }
+    }
 
     /**
      * Carga un &aacute;rbol geneal&oacute;gico desde un archivo JSON seleccionado por el usuario.

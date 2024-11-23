@@ -22,8 +22,9 @@ import org.json.simple.parser.ParseException;
  * @author chela
  */
 /**
- * Clase que representa un &aacute;rbol geneal&oacute;gico, permitiendo cargar datos desde un archivo JSON,
- * realizar b&uacute;squedas por nombre o mote, y gestionar los nodos jer&aacute;rquicos del &aacute;rbol.
+ * Clase que representa un &aacute;rbol geneal&oacute;gico, permitiendo cargar
+ * datos desde un archivo JSON, realizar b&uacute;squedas por nombre o mote, y
+ * gestionar los nodos jer&aacute;rquicos del &aacute;rbol.
  */
 public class Arbol {
 
@@ -31,11 +32,13 @@ public class Arbol {
     private JTextArea areaInformacion;
     private HashTable tabla;
     private HashTable tablaMotes;
+    private HashTable tablaTitulos;
 
     /**
      * Constructor que inicializa el &aacute;rbol geneal&oacute;gico.
      *
-     * @param areaInformacion &Aacute;rea de texto donde se mostrar&aacute;n mensajes informativos.
+     * @param areaInformacion &Aacute;rea de texto donde se mostrar&aacute;n
+     * mensajes informativos.
      */
     public Arbol(JTextArea areaInformacion) {
         this.areaInformacion = areaInformacion;
@@ -43,6 +46,7 @@ public class Arbol {
         this.raiz = null;
         this.tabla = new HashTable(100); //capacidad inicial de la hashtable
         this.tablaMotes = new HashTable(100); //capacidad inicial de la hashtable
+        this.tablaTitulos = new HashTable(100); //capacidad inicial de la hashtable
 
     }
 
@@ -54,110 +58,62 @@ public class Arbol {
     public Nodo getRaiz() {
         return raiz;
     }
-    
- /**
-     * Carga datos desde un archivo JSON y construye el &aacute;rbol geneal&oacute;gico.
+
+    /**
+     * Carga datos desde un archivo JSON y construye el &aacute;rbol
+     * geneal&oacute;gico.
      *
      * @param json Cadena JSON que contiene los datos a cargar.
      */
     public void cargarDesdeJSON(String json) {
-    try {
-        JSONParser parser = new JSONParser();
-        JSONObject jsonObject = (JSONObject) parser.parse(json);
+        try {
+            JSONParser parser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) parser.parse(json);
 
-        SimpleSet keys = new SimpleSet();
-        for (Object key : jsonObject.keySet()) {
-            keys.add((String) key);
-        }
+            SimpleSet keys = new SimpleSet();
+            for (Object key : jsonObject.keySet()) {
+                keys.add((String) key);
+            }
 
-        String[] keyArray = keys.toArray();
-        if (keyArray.length > 0) {
-            String firstKey = keyArray[0];
+            String[] keyArray = keys.toArray();
+            if (keyArray.length > 0) {
+                String firstKey = keyArray[0];
 
-            if (firstKey.contains("House")) {
-                Object houseData = jsonObject.get(firstKey);
+                if (firstKey.contains("House")) {
+                    Object houseData = jsonObject.get(firstKey);
 
-                if (houseData instanceof org.json.simple.JSONArray) {
-                    org.json.simple.JSONArray houseArray = (org.json.simple.JSONArray) houseData;
+                    if (houseData instanceof org.json.simple.JSONArray) {
+                        org.json.simple.JSONArray houseArray = (org.json.simple.JSONArray) houseData;
 
-                    areaInformacion.append("Cargando información para la casa: " + firstKey + "\n");
+                        areaInformacion.append("Cargando información para la casa: " + firstKey + "\n");
 
-                    for (Object obj : houseArray) {
-                        if (obj instanceof JSONObject) {
-                            JSONObject characterEntry = (JSONObject) obj;
+                        for (Object obj : houseArray) {
+                            if (obj instanceof JSONObject) {
+                                JSONObject characterEntry = (JSONObject) obj;
 
-                            for (Object characterNameObj : characterEntry.keySet()) {
-                                String characterName = characterNameObj.toString();
+                                for (Object characterNameObj : characterEntry.keySet()) {
+                                    String characterName = characterNameObj.toString();
 
-                                Object characterDataObj = characterEntry.get(characterName);
-                                if (characterDataObj instanceof org.json.simple.JSONArray) {
-                                    org.json.simple.JSONArray characterData = (org.json.simple.JSONArray) characterDataObj;
+                                    Object characterDataObj = characterEntry.get(characterName);
+                                    if (characterDataObj instanceof org.json.simple.JSONArray) {
+                                        org.json.simple.JSONArray characterData = (org.json.simple.JSONArray) characterDataObj;
 
-                                    processCharacter(characterName, characterData);
+                                        processCharacter(characterName, characterData);
+                                    }
                                 }
                             }
                         }
+                    } else {
+                        areaInformacion.append("Formato desconocido para la casa en el JSON.\n");
                     }
-                } else {
-                    areaInformacion.append("Formato desconocido para la casa en el JSON.\n");
                 }
             }
+        } catch (ParseException e) {
+            areaInformacion.append("Error al parsear el JSON: " + e.getMessage() + "\n");
+        } catch (ClassCastException e) {
+            areaInformacion.append("Error de tipo en el JSON: " + e.getMessage() + "\n");
         }
-    } catch (ParseException e) {
-        areaInformacion.append("Error al parsear el JSON: " + e.getMessage() + "\n");
-    } catch (ClassCastException e) {
-        areaInformacion.append("Error de tipo en el JSON: " + e.getMessage() + "\n");
     }
-}
-
-    
-
-//        try {
-//            JSONParser parser = new JSONParser();
-//            JSONObject jsonObject = (JSONObject) parser.parse(json);
-//
-//            Set<String> keys = jsonObject.keySet();
-//
-//            Iterator<String> iterator = keys.iterator();
-//            if (iterator.hasNext()) {
-//                String firstKey = iterator.next();
-//
-//                if (firstKey.contains("House")) {
-//                    Object houseData = jsonObject.get(firstKey);
-//
-//                    if (houseData instanceof org.json.simple.JSONArray) {
-//                        org.json.simple.JSONArray houseArray = (org.json.simple.JSONArray) houseData;
-//
-//                        areaInformacion.append("Cargando información para la casa: " + firstKey + "\n");
-//
-//                        for (Object obj : houseArray) {
-//                            if (obj instanceof JSONObject) {
-//                                JSONObject characterEntry = (JSONObject) obj;
-//
-//                                for (Object characterNameObj : characterEntry.keySet()) {
-//                                    String characterName = characterNameObj.toString();
-//
-//                                    Object characterDataObj = characterEntry.get(characterName);
-//                                    if (characterDataObj instanceof org.json.simple.JSONArray) {
-//                                        org.json.simple.JSONArray characterData = (org.json.simple.JSONArray) characterDataObj;
-//
-//                                        processCharacter(characterName, characterData);
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    } else {
-//                        areaInformacion.append("Formato desconocido para la casa en el JSON.\n");
-//                    }
-//                }
-//            }
-//
-//        } catch (org.json.simple.parser.ParseException e) {
-//            areaInformacion.append("Error al parsear el JSON: " + e.getMessage() + "\n");
-//        } catch (ClassCastException e) {
-//            areaInformacion.append("Error de tipo en el JSON: " + e.getMessage() + "\n");
-//        }
-//    }
 
     /**
      * Procesa los datos de un personaje y los agrega al &aacute;rbol.
@@ -183,27 +139,27 @@ public class Arbol {
                     } else if (key.equals("Born to")) {
                         nodo.setPadreNombre((String) value);
                     } else if (key.equals("Father to")) {
-                         if (value instanceof org.json.simple.JSONArray) {
-                             org.json.simple.JSONArray childrenArray = (org.json.simple.JSONArray) value;
-                             for (Object child : childrenArray) {
-                                 if (child instanceof String) {
-                                     
-                                     nodo.agregarHijo(new Nodo(((String) child).trim(), null, null, null, nodo.getNombreCompleto()));
-                                 }
-                             }
-                         } else {
-                            
-                             if (value instanceof String) {
-                                 String[] children = ((String) value).replace("[", "").replace("]", "").split(",");
-                                 for (String child : children) {
-                                     nodo.agregarHijo(new Nodo(child.trim(), null, null, null, nodo.getNombreCompleto()));
-            }
-        }
-    }
-} else if (key.equals ("Fate")) {
-    nodo.setFate((String) value);
-                        
-}
+                        if (value instanceof org.json.simple.JSONArray) {
+                            org.json.simple.JSONArray childrenArray = (org.json.simple.JSONArray) value;
+                            for (Object child : childrenArray) {
+                                if (child instanceof String) {
+
+                                    nodo.agregarHijo(new Nodo(((String) child).trim(), null, null, null, nodo.getNombreCompleto()));
+                                }
+                            }
+                        } else {
+
+                            if (value instanceof String) {
+                                String[] children = ((String) value).replace("[", "").replace("]", "").split(",");
+                                for (String child : children) {
+                                    nodo.agregarHijo(new Nodo(child.trim(), null, null, null, nodo.getNombreCompleto()));
+                                }
+                            }
+                        }
+                    } else if (key.equals("Fate")) {
+                        nodo.setFate((String) value);
+
+                    }
 
                 }
             }
@@ -217,7 +173,7 @@ public class Arbol {
 
         tabla.agregar(nodo.getNombreCompleto(), nodo);
         if (nodo.getMote() != null) {
-              tablaMotes.agregarMote(nodo.getMote(), nodo);
+            tablaMotes.agregarMote(nodo.getMote(), nodo);
 
         }
     }
@@ -235,7 +191,7 @@ public class Arbol {
         }
     }
 
-     /**
+    /**
      * Busca un nodo por su nombre completo.
      *
      * @param nombre Nombre completo del nodo a buscar.
@@ -255,6 +211,9 @@ public class Arbol {
         return tablaMotes.buscarMote(mote);
     }
 
+    public Nodo buscarNodoPorTitulo (String titulo) {
+        return tablaTitulos.buscarTitulo(titulo);
+    }
     /**
      * Devuelve una lista de todos los nodos del &aacute;rbol.
      *
@@ -267,9 +226,10 @@ public class Arbol {
     }
 
     /**
-     * Recolecta todos los nodos a partir de un nodo inicial y los agrega a una lista.
+     * Recolecta todos los nodos a partir de un nodo inicial y los agrega a una
+     * lista.
      *
-     * @param nodo  Nodo inicial.
+     * @param nodo Nodo inicial.
      * @param nodos Lista donde se agregar&aacute;n los nodos recolectados.
      * @return Lista actualizada con los nodos recolectados.
      */
@@ -277,7 +237,7 @@ public class Arbol {
         if (nodo != null) {
             nodos.add(nodo);
             for (Nodo hijo : nodo.getHijos()) {
-                nodos =collectAllNodes(hijo, nodos);
+                nodos = collectAllNodes(hijo, nodos);
             }
         }
         return nodos;

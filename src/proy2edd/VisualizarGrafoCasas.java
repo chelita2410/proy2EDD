@@ -4,17 +4,12 @@
  */
 package proy2edd;
 
-import org.graphstream.graph.Graph;
-import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.swing_viewer.ViewPanel;
 import org.graphstream.ui.view.Viewer;
 import org.graphstream.ui.view.ViewerPipe;
 import org.graphstream.ui.view.ViewerListener;
 import org.graphstream.graph.Graph;
-import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
-import proy2edd.Arbol;
-import proy2edd.Nodo;
 
 /**
  *
@@ -48,29 +43,50 @@ public class VisualizarGrafoCasas {
      */
     public void construirGrafo(Arbol arbol) {
 
-        MiLista nodos = arbol.getTodosLosNodos();
-        for (int i = 0; i < 10; i++) {
-            Nodo nodo = nodos.get(i);
-            if(nodo != null){
-            System.out.println(nodo.getNombreCompleto());}
-        }
-        // Agregar nodos y sus conexiones al grafo
-        for (int i = 0; i < nodos.size(); i++) {
-            Nodo nodo = nodos.get(i);
-        // Verifica si el nodo ya existe en el grafo
+    // Obt&eacute;n todos los nodos del &aacute;rbol
+    MiLista nodos = arbol.getTodosLosNodos();
+    
+    // Primero, agregar todos los nodos al grafo
+    for (int i = 0; i < nodos.size(); i++) {
+        Nodo nodo = nodos.get(i);
+        if (nodo != null) {
+            // Verifica si el nodo ya existe en el grafo
             if (grafo.getNode(nodo.getNombreCompleto()) == null) {
                 grafo.addNode(nodo.getNombreCompleto()).setAttribute("ui.label", nodo.getNombreCompleto());
             }
-        // Agregar una arista si el nodo tiene un padre
+        }
+    }
+
+    // Ahora agregar las aristas entre los nodos
+    for (int i = 0; i < nodos.size(); i++) {
+        Nodo nodo = nodos.get(i);
+        if (nodo != null) {
+            // Agregar una arista si el nodo tiene un padre
             if (nodo.getPadre() != null) {
                 String padre = nodo.getPadre().getNombreCompleto();
                 String hijo = nodo.getNombreCompleto();
+                // Verifica si ya existe una arista entre el padre y el hijo
                 if (grafo.getEdge(padre + "-" + hijo) == null && grafo.getEdge(hijo + "-" + padre) == null) {
                     grafo.addEdge(padre + "-" + hijo, padre, hijo);
                 }
             }
+
+            // Agregar las aristas entre el nodo y sus hijos
+            // Asegurarse de que la lista de hijos no es null
+            if (nodo.getHijos() != null) {
+                for (Nodo hijo : nodo.getHijos()) {
+                    // Verifica si el hijo es null antes de intentar acceder a sus propiedades
+                    if (hijo != null) {
+                        if (grafo.getEdge(nodo.getNombreCompleto() + "-" + hijo.getNombreCompleto()) == null) {
+                            grafo.addEdge(nodo.getNombreCompleto() + "-" + hijo.getNombreCompleto(), nodo.getNombreCompleto(), hijo.getNombreCompleto());
+                        }
+                    }
+                }
+            }
         }
     }
+}
+
 /**
      * Devuelve un panel de vista gr&aacute;fica que muestra el grafo.
      * Activa el diseño autom&aacute;tico del grafo.
