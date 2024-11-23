@@ -37,8 +37,6 @@ public class VisualizarGrafoCasas {
         this.grafo = new SingleGraph("Árbol Genealógico");
         // Configuración del grafo
         grafo.setAttribute("org.graphstream.ui", "swing");
-        this.grafo.setAttribute("ui.stylesheet", "node { fill-color: lightblue; }");
-
         grafo.setAttribute("ui.stylesheet", "node { fill-color: grey; size: 25px; }");
     }
 

@@ -17,6 +17,7 @@ public class Nodo {
     private String mote;
     private String titulo;
     private String padreNombre;
+    private String fate;
     private Nodo padre;
     private Nodo[] hijos;
     private int numHijos;
@@ -28,12 +29,14 @@ public class Nodo {
      * @param mote El mote o apodo del individuo (puede ser null).
      * @param titulo El t&iacute;tulo del individuo (puede ser null).
      * @param padreNombre El nombre completo del padre (puede ser null).
+     * @param fate El destino del individuo.
      */
-    public Nodo(String nombreCompleto, String mote, String titulo, String padreNombre) {
+    public Nodo(String nombreCompleto, String mote, String titulo, String padreNombre, String fate) {
         this.nombreCompleto = nombreCompleto;
         this.mote = mote;
         this.titulo = titulo;
         this.padreNombre = padreNombre;
+        this.fate = fate;
         this.hijos = new Nodo[10]; //tamaño inicial, ajustable seg&uacute;n las necesidades
         this.numHijos = 0;
     }
@@ -45,6 +48,24 @@ public class Nodo {
      */
     public String getNombreCompleto() {
         return nombreCompleto;
+    }
+    
+    /**
+     * Obtiene el destino del individuo del nodo.
+     *
+     * @return El destino.
+     */
+    public String getFate() {
+        return fate;
+    }
+    
+     /**
+     * Establece el destino del individuo del nodo.
+     *
+     * @param fate El destino.
+     */
+    public void setFate(String fate) {
+        this.fate = fate;
     }
 
     /**
@@ -181,7 +202,7 @@ public class Nodo {
         if (numHijos > 0) {
         info.append("Hijos: ");
         for (int i = 0; i < numHijos; i++) {
-            info.append(hijos[i].getNombreCompleto());
+            info.append(hijos[i].getNombreCompleto()).append("\n");
             if (i < numHijos - 1) {
                 info.append(", ");
             }
@@ -189,6 +210,9 @@ public class Nodo {
     } else {
         info.append("Hijos: Ninguno");
     }
+        if (fate != null) {
+            info.append("Destino: ").append(fate).append("\n");
+        }
     return info.toString();    
     }
 }

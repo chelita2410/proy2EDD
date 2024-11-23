@@ -7,13 +7,14 @@ package proy2edd;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashSet;
 import javax.swing.JTextArea;
 import org.json.simple.JSONArray;
 import proy2edd.Nodo;
-import java.util.Iterator;
+import proy2edd.HashTable;
+import proy2edd.SimpleSet;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import java.util.Set;
 import org.json.simple.parser.ParseException;
 
 /**
@@ -60,52 +61,103 @@ public class Arbol {
      * @param json Cadena JSON que contiene los datos a cargar.
      */
     public void cargarDesdeJSON(String json) {
-        try {
-            JSONParser parser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) parser.parse(json);
+    try {
+        JSONParser parser = new JSONParser();
+        JSONObject jsonObject = (JSONObject) parser.parse(json);
 
-            Set<String> keys = jsonObject.keySet();
+        SimpleSet keys = new SimpleSet();
+        for (Object key : jsonObject.keySet()) {
+            keys.add((String) key);
+        }
 
-            Iterator<String> iterator = keys.iterator();
-            if (iterator.hasNext()) {
-                String firstKey = iterator.next();
+        String[] keyArray = keys.toArray();
+        if (keyArray.length > 0) {
+            String firstKey = keyArray[0];
 
-                if (firstKey.contains("House")) {
-                    Object houseData = jsonObject.get(firstKey);
+            if (firstKey.contains("House")) {
+                Object houseData = jsonObject.get(firstKey);
 
-                    if (houseData instanceof org.json.simple.JSONArray) {
-                        org.json.simple.JSONArray houseArray = (org.json.simple.JSONArray) houseData;
+                if (houseData instanceof org.json.simple.JSONArray) {
+                    org.json.simple.JSONArray houseArray = (org.json.simple.JSONArray) houseData;
 
-                        areaInformacion.append("Cargando información para la casa: " + firstKey + "\n");
+                    areaInformacion.append("Cargando información para la casa: " + firstKey + "\n");
 
-                        for (Object obj : houseArray) {
-                            if (obj instanceof JSONObject) {
-                                JSONObject characterEntry = (JSONObject) obj;
+                    for (Object obj : houseArray) {
+                        if (obj instanceof JSONObject) {
+                            JSONObject characterEntry = (JSONObject) obj;
 
-                                for (Object characterNameObj : characterEntry.keySet()) {
-                                    String characterName = characterNameObj.toString();
+                            for (Object characterNameObj : characterEntry.keySet()) {
+                                String characterName = characterNameObj.toString();
 
-                                    Object characterDataObj = characterEntry.get(characterName);
-                                    if (characterDataObj instanceof org.json.simple.JSONArray) {
-                                        org.json.simple.JSONArray characterData = (org.json.simple.JSONArray) characterDataObj;
+                                Object characterDataObj = characterEntry.get(characterName);
+                                if (characterDataObj instanceof org.json.simple.JSONArray) {
+                                    org.json.simple.JSONArray characterData = (org.json.simple.JSONArray) characterDataObj;
 
-                                        processCharacter(characterName, characterData);
-                                    }
+                                    processCharacter(characterName, characterData);
                                 }
                             }
                         }
-                    } else {
-                        areaInformacion.append("Formato desconocido para la casa en el JSON.\n");
                     }
+                } else {
+                    areaInformacion.append("Formato desconocido para la casa en el JSON.\n");
                 }
             }
-
-        } catch (org.json.simple.parser.ParseException e) {
-            areaInformacion.append("Error al parsear el JSON: " + e.getMessage() + "\n");
-        } catch (ClassCastException e) {
-            areaInformacion.append("Error de tipo en el JSON: " + e.getMessage() + "\n");
         }
+    } catch (ParseException e) {
+        areaInformacion.append("Error al parsear el JSON: " + e.getMessage() + "\n");
+    } catch (ClassCastException e) {
+        areaInformacion.append("Error de tipo en el JSON: " + e.getMessage() + "\n");
     }
+}
+
+    
+
+//        try {
+//            JSONParser parser = new JSONParser();
+//            JSONObject jsonObject = (JSONObject) parser.parse(json);
+//
+//            Set<String> keys = jsonObject.keySet();
+//
+//            Iterator<String> iterator = keys.iterator();
+//            if (iterator.hasNext()) {
+//                String firstKey = iterator.next();
+//
+//                if (firstKey.contains("House")) {
+//                    Object houseData = jsonObject.get(firstKey);
+//
+//                    if (houseData instanceof org.json.simple.JSONArray) {
+//                        org.json.simple.JSONArray houseArray = (org.json.simple.JSONArray) houseData;
+//
+//                        areaInformacion.append("Cargando información para la casa: " + firstKey + "\n");
+//
+//                        for (Object obj : houseArray) {
+//                            if (obj instanceof JSONObject) {
+//                                JSONObject characterEntry = (JSONObject) obj;
+//
+//                                for (Object characterNameObj : characterEntry.keySet()) {
+//                                    String characterName = characterNameObj.toString();
+//
+//                                    Object characterDataObj = characterEntry.get(characterName);
+//                                    if (characterDataObj instanceof org.json.simple.JSONArray) {
+//                                        org.json.simple.JSONArray characterData = (org.json.simple.JSONArray) characterDataObj;
+//
+//                                        processCharacter(characterName, characterData);
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    } else {
+//                        areaInformacion.append("Formato desconocido para la casa en el JSON.\n");
+//                    }
+//                }
+//            }
+//
+//        } catch (org.json.simple.parser.ParseException e) {
+//            areaInformacion.append("Error al parsear el JSON: " + e.getMessage() + "\n");
+//        } catch (ClassCastException e) {
+//            areaInformacion.append("Error de tipo en el JSON: " + e.getMessage() + "\n");
+//        }
+//    }
 
     /**
      * Procesa los datos de un personaje y los agrega al &aacute;rbol.
@@ -114,7 +166,7 @@ public class Arbol {
      * @param characterData Datos asociados al personaje en formato JSON.
      */
     private void processCharacter(String characterName, JSONArray characterData) {
-        Nodo nodo = new Nodo(characterName, null, null, null);
+        Nodo nodo = new Nodo(characterName, null, null, null, null);
 
         for (Object obj : characterData) {
             if (obj instanceof JSONObject) {
@@ -136,7 +188,7 @@ public class Arbol {
                              for (Object child : childrenArray) {
                                  if (child instanceof String) {
                                      
-                                     nodo.agregarHijo(new Nodo(((String) child).trim(), null, null, nodo.getNombreCompleto()));
+                                     nodo.agregarHijo(new Nodo(((String) child).trim(), null, null, null, nodo.getNombreCompleto()));
                                  }
                              }
                          } else {
@@ -144,10 +196,13 @@ public class Arbol {
                              if (value instanceof String) {
                                  String[] children = ((String) value).replace("[", "").replace("]", "").split(",");
                                  for (String child : children) {
-                                     nodo.agregarHijo(new Nodo(child.trim(), null, null, nodo.getNombreCompleto()));
+                                     nodo.agregarHijo(new Nodo(child.trim(), null, null, null, nodo.getNombreCompleto()));
             }
         }
     }
+} else if (key.equals ("Fate")) {
+    nodo.setFate((String) value);
+                        
 }
 
                 }
