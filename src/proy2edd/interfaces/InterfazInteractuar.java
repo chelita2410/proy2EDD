@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package proy2edd.interfaces;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -35,22 +36,24 @@ import proy2edd.Arbol;
 import proy2edd.MiLista;
 import proy2edd.Nodo;
 import proy2edd.VisualizarGrafoCasas;
+
 /**
  *
  * @author chela
  */
-public class InterfazInteractuar extends javax.swing.JFrame  {
+public class InterfazInteractuar extends javax.swing.JFrame implements ViewerListener{
+
     private JTextArea areaInformacion;
     private JTextField campoBusqueda;
+    //private JTextArea infoTextArea;
     private JButton botonBuscar;
+    private JButton botonGraficar;
     private JButton botonCargar;
     private Arbol arbol;
     private JScrollPane scroll;
-   // private JPanel graphPanel;
- //   private VisualizarGrafoCasas visualizeGraph;
-   // private Component scroll;
-
-            
+    private JPanel graphPanel;
+    private VisualizarGrafoCasas visualizeGraph;
+    // private Component scroll;
 
     /**
      * Creates new form InterfazInteractuar
@@ -63,43 +66,59 @@ public class InterfazInteractuar extends javax.swing.JFrame  {
         this.setSize(xSize, ySize);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+
         
+        graphPanel = new JPanel(new BorderLayout());
+        add(graphPanel, BorderLayout.CENTER);
+       // infoTextArea = new JTextArea(20,50);
+        //infoTextArea.setEditable(false);
         areaInformacion = new JTextArea(20, 50);
         areaInformacion.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(areaInformacion);
         add(scrollPane, BorderLayout.EAST);
         campoBusqueda = new JTextField(20);
         botonBuscar = new JButton("Buscar");
+        botonGraficar = new JButton("Graficar");
         botonCargar = new JButton("Cargar JSON");
-        
+
         arbol = new Arbol(areaInformacion);
-        
+
         JPanel panelSuperior = new JPanel();
         panelSuperior.setLayout(new FlowLayout());
         panelSuperior.add(new JLabel("Buscar personaje: "));
         panelSuperior.add(campoBusqueda);
         panelSuperior.add(botonBuscar);
+        panelSuperior.add(botonGraficar);
         panelSuperior.add(botonCargar);
-        
+
         JPanel panelPrincipal = new JPanel();
         panelPrincipal.setLayout(new BorderLayout());
         panelPrincipal.add(panelSuperior, BorderLayout.NORTH);
         JScrollPane scroll = new JScrollPane();
         panelPrincipal.add(scroll, BorderLayout.CENTER);
-        
+        this.visualizeGraph = new VisualizarGrafoCasas();
+        this.visualizeGraph.construirGrafo(arbol);
         add(panelPrincipal);
-        
+
         botonBuscar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 buscarNodo();
             }
         });
-        
+
         botonCargar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 cargarArbolDesdeJSON();
+            }
+        });
+
+        
+        botonGraficar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mostrarGrafo();
             }
         });
         
@@ -107,7 +126,7 @@ public class InterfazInteractuar extends javax.swing.JFrame  {
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
-        
+
         /* JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("Archivo JSON");
         JMenuItem loadMenuItem = new JMenuItem("Cargar árbol genealógico del JSON");
@@ -119,35 +138,61 @@ public class InterfazInteractuar extends javax.swing.JFrame  {
         
         graphPanel = new JPanel(new BorderLayout());
         add(graphPanel, BorderLayout.CENTER); */
-        
-       /* loadMenuItem.addActionListener(new ActionListener() {
+ /* loadMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 cargarArbolDesdeJSON();
             }
         }); */
-        
-       //initComponents();
-        
+        //initComponents();
     }
-    
+    @Override
+    public void viewClosed(String viewName) {
+        // Implementa la lógica cuando la vista se cierre
+        System.out.println("Vista cerrada: " + viewName);
+    }
+
+    @Override
+    public void buttonPushed(String id) {
+        // Implementa la lógica cuando se presione un botón
+        Nodo nodo = arbol.buscarNodoPorNombre(id);
+        if (nodo != null) {
+            areaInformacion.setText(nodo.mostrarInformacion());
+        }
+    }
+
+    @Override
+    public void buttonReleased(String id) {
+        // Implementa la lógica cuando se libere un botón
+        System.out.println("Botón liberado: " + id);
+    }
+
     private void buscarNodo() {
         String nombre = campoBusqueda.getText().trim();
         if (nombre.isEmpty()) {
             areaInformacion.append("Por favor introduce un nombre o mote para buscar.\n");
             return;
         }
-        
+
         Nodo nodo = arbol.buscarNodoPorNombre(nombre);
         if (nodo != null) {
             areaInformacion.append("\nInformación del nodo:\n");
             areaInformacion.append(nodo.mostrarInformacion() + "\n");
-            
+
         } else {
-            areaInformacion.append("Nodo con nombre o mote '" + nombre + "' no encontrado.\n");
+            nodo = arbol.buscarNodoPorMote(nombre);
+            if (nodo != null) {
+                areaInformacion.append("\nInformación del nodo:\n");
+                areaInformacion.append(nodo.mostrarInformacion() + "\n");
+
+            } else {
+                areaInformacion.append("Nodo con nombre o mote '" + nombre + "' no encontrado.\n");
+            }
         }
-    }
+        }
     
+    
+
     private void cargarArbolDesdeJSON() {
         JFileChooser selectorArchivo = new JFileChooser();
         int opcion = selectorArchivo.showOpenDialog(this);
@@ -162,7 +207,8 @@ public class InterfazInteractuar extends javax.swing.JFrame  {
             }
         }
     }
-       /* JFileChooser fileChooser = new JFileChooser();
+
+    /* JFileChooser fileChooser = new JFileChooser();
         int result = fileChooser.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
             String filePath = fileChooser.getSelectedFile().getAbsolutePath();
@@ -171,7 +217,12 @@ public class InterfazInteractuar extends javax.swing.JFrame  {
     }
         } */
 
-  /*  private void mostrarGrafo() {
+   private void mostrarGrafo() {
+       
+       //graphPanel.removeAll();
+        System.setProperty("org.graphstream.ui", "swing");
+        Graph graph = new SingleGraph("Árbol Genealógico");
+        graph.setAttribute("ui.stylesheet", "graph { fill-color: #EEE; }");
         visualizeGraph.construirGrafo(arbol);
         graphPanel.removeAll();
         ViewPanel viewPanel = visualizeGraph.getGraphView();
@@ -181,20 +232,20 @@ public class InterfazInteractuar extends javax.swing.JFrame  {
         graphPanel.repaint();
     } 
 
-    public void buttonPushed(String id) {
-        Nodo nodo = arbol.buscarNodoPorNombre(id);
-        if (nodo != null) {
-            infoTextArea.setText(nodo.mostrarInformacion());
-        }
-    }
+//    public void buttonPushed(String id) {
+//        Nodo nodo = arbol.buscarNodoPorNombre(id);
+//        if (nodo != null) {
+//            infoTextArea.setText(nodo.mostrarInformacion());
+//        }
+//    }
 
-    public void buttonReleased(String id) {
-        
-    }
- 
-    public void viewClosed(String viewName) {
-        
-    }
+//    public void buttonReleased(String id) {
+//        
+//    }
+// 
+//    public void viewClosed(String viewName) {
+//        
+//    }
     
     public void mouseLeft(String eventDetails) {
         
@@ -274,5 +325,9 @@ public class InterfazInteractuar extends javax.swing.JFrame  {
     private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables
 
-   
+    @Override
+    public void mouseOver(String string) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
 }

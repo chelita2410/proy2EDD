@@ -98,6 +98,7 @@ public class Nodo {
         if (padre != null) {
             info.append("Padre: ").append(padre.getNombreCompleto()).append("\n");
         }
+        if (numHijos > 0) {
         info.append("Hijos: ");
         for (int i = 0; i < numHijos; i++) {
             info.append(hijos[i].getNombreCompleto());
@@ -105,6 +106,17 @@ public class Nodo {
                 info.append(", ");
             }
         }
-        return info.toString();
+    } else {
+        info.append("Hijos: Ninguno");
+    }
+    return info.toString();
+//        info.append("Hijos: ");
+//        for (int i = 0; i < numHijos; i++) {
+//            info.append(hijos[i].getNombreCompleto());
+//            if (i < numHijos - 1) {
+//                info.append(", ");
+//            }
+//        }
+//        return info.toString();
     }
 }

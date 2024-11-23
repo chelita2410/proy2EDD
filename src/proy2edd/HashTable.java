@@ -42,11 +42,41 @@ public class HashTable {
         tamaño++;
     }
     
+    
+    public void agregarMote(String clave, Nodo nodo) {
+        if (tamaño >= capacidad * 0.7) {
+            redimensionarMote();
+        }
+        int indice = hash(clave);
+        while (tabla[indice] != null) {
+            if (tabla[indice].getMote().equals(clave)) { // || (tabla[indice].getMote() != null && tabla[indice].getMote().equals(clave))) {
+                return; //no agregar duplicados
+            }
+            indice = (indice + 1) % capacidad; //resolucion de colision por desplazamiento lineal
+        }
+        tabla[indice] = nodo;
+        tamaño++;
+    }
+    
     public Nodo buscar(String clave) {
         int indice = hash(clave);
         int intentos = 0;
         while (tabla[indice] != null && intentos < capacidad) {
             if (tabla[indice].getNombreCompleto().equals(clave)) {// || (tabla[indice].getMote() != null && tabla[indice].getMote().equals(clave))) {
+                return tabla[indice];
+            }
+            indice = (indice + 1) % capacidad;
+            intentos++;
+        }
+        return null;
+    }
+    
+    
+    public Nodo buscarMote(String clave) {
+        int indice = hash(clave);
+        int intentos = 0;
+        while (tabla[indice] != null && intentos < capacidad) {
+            if (tabla[indice].getMote().equals(clave)) {// || (tabla[indice].getMote() != null && tabla[indice].getMote().equals(clave))) {
                 return tabla[indice];
             }
             indice = (indice + 1) % capacidad;
@@ -61,6 +91,22 @@ public class HashTable {
         for (Nodo nodo : tabla) {
             if (nodo != null) {
                 int indice = hash(nodo.getNombreCompleto());
+                while (nuevaTabla[indice] != null) {
+                    indice = (indice + 1) % capacidad;
+                }
+                nuevaTabla[indice] = nodo;
+            }
+        }
+        tabla = nuevaTabla;
+    }
+    
+    
+    private void redimensionarMote() {
+        capacidad *= 2;
+        Nodo[] nuevaTabla = new Nodo[capacidad];
+        for (Nodo nodo : tabla) {
+            if (nodo != null) {
+                int indice = hash(nodo.getMote());
                 while (nuevaTabla[indice] != null) {
                     indice = (indice + 1) % capacidad;
                 }
