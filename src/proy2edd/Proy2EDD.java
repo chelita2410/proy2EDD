@@ -8,9 +8,14 @@ import proy2edd.interfaces.InterfazUnica;
  *
  * @author chela
  */
+/**
+ * Clase <code> main </code> del proyecto
+ * 
+ */
 public class Proy2EDD {
 
     /**
+     * M&eacute;todo principal que ejecuta el programa.
      * @param args the command line arguments
      */
     public static void main(String[] args) {

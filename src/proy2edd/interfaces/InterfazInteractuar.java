@@ -38,14 +38,15 @@ import proy2edd.Nodo;
 import proy2edd.VisualizarGrafoCasas;
 
 /**
- *
- * @author chela
+ * Clase principal que representa la interfaz gr&aacute;fica de usuario para interactuar
+ * con un &aacute;rbol geneal&oacute;gico. Permite cargar datos desde un archivo JSON,
+ * buscar nodos en el &aacute;rbol y visualizar el grafo del &aacute;rbol geneal&oacute;gico.
+ * 
  */
 public class InterfazInteractuar extends javax.swing.JFrame implements ViewerListener{
 
     private JTextArea areaInformacion;
     private JTextField campoBusqueda;
-    //private JTextArea infoTextArea;
     private JButton botonBuscar;
     private JButton botonGraficar;
     private JButton botonCargar;
@@ -53,11 +54,10 @@ public class InterfazInteractuar extends javax.swing.JFrame implements ViewerLis
     private JScrollPane scroll;
     private JPanel graphPanel;
     private VisualizarGrafoCasas visualizeGraph;
-    // private Component scroll;
 
-    /**
-     * Creates new form InterfazInteractuar
-     */
+    
+    /*Constructor de la clase. Inicializa los componentes de la interfaz gr&aacute;fica,
+     * configura los paneles y define las acciones de los botones. */
     public InterfazInteractuar() {
         setTitle("Visor de árboles genealógicos");
         Toolkit toolkit = Toolkit.getDefaultToolkit();
@@ -67,11 +67,9 @@ public class InterfazInteractuar extends javax.swing.JFrame implements ViewerLis
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        
+        // Configuraci&oacute;n del panel principal
         graphPanel = new JPanel(new BorderLayout());
         add(graphPanel, BorderLayout.CENTER);
-       // infoTextArea = new JTextArea(20,50);
-        //infoTextArea.setEditable(false);
         areaInformacion = new JTextArea(20, 50);
         areaInformacion.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(areaInformacion);
@@ -83,6 +81,7 @@ public class InterfazInteractuar extends javax.swing.JFrame implements ViewerLis
 
         arbol = new Arbol(areaInformacion);
 
+        // Configuraci&oacute;n del panel superior
         JPanel panelSuperior = new JPanel();
         panelSuperior.setLayout(new FlowLayout());
         panelSuperior.add(new JLabel("Buscar personaje: "));
@@ -100,13 +99,14 @@ public class InterfazInteractuar extends javax.swing.JFrame implements ViewerLis
         this.visualizeGraph.construirGrafo(arbol);
         add(panelPrincipal);
 
+        // Acci&oacute;n del bot&oacute;n "Buscar"
         botonBuscar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 buscarNodo();
             }
         });
-
+        // Acci&oacute;n del bot&oacute;n "Cargar JSON"
         botonCargar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -114,7 +114,7 @@ public class InterfazInteractuar extends javax.swing.JFrame implements ViewerLis
             }
         });
 
-        
+        // Acci&oacute;n del bot&oacute;n "Graficar"
         botonGraficar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -126,47 +126,44 @@ public class InterfazInteractuar extends javax.swing.JFrame implements ViewerLis
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
-
-        /* JMenuBar menuBar = new JMenuBar();
-        JMenu fileMenu = new JMenu("Archivo JSON");
-        JMenuItem loadMenuItem = new JMenuItem("Cargar árbol genealógico del JSON");
-        fileMenu.add(loadMenuItem);
-        menuBar.add(fileMenu);
-        setJMenuBar(menuBar);
-        
-       
-        
-        graphPanel = new JPanel(new BorderLayout());
-        add(graphPanel, BorderLayout.CENTER); */
- /* loadMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cargarArbolDesdeJSON();
-            }
-        }); */
-        //initComponents();
     }
+    
+    /**
+     * Maneja el evento cuando se cierra una vista del grafo.
+     *
+     * @param viewName Nombre de la vista cerrada.
+     */
     @Override
     public void viewClosed(String viewName) {
-        // Implementa la lógica cuando la vista se cierre
         System.out.println("Vista cerrada: " + viewName);
     }
 
+    /**
+     * Maneja el evento cuando se presiona un bot&oacute;n en el grafo.
+     *
+     * @param id Identificador del nodo asociado al bot&oacute;n presionado.
+     */
     @Override
     public void buttonPushed(String id) {
-        // Implementa la lógica cuando se presione un botón
         Nodo nodo = arbol.buscarNodoPorNombre(id);
         if (nodo != null) {
             areaInformacion.setText(nodo.mostrarInformacion());
         }
     }
 
+    /**
+     * Maneja el evento cuando se libera un bot&oacute;n en el grafo.
+     *
+     * @param id Identificador del nodo asociado al bot&oacute;n liberado.
+     */
     @Override
     public void buttonReleased(String id) {
-        // Implementa la lógica cuando se libere un botón
         System.out.println("Botón liberado: " + id);
     }
 
+    /**
+     * Busca un nodo en el &aacute;rbol por su nombre o mote y muestra su informaci&oacute;n en el &aacute;rea de texto.
+     */
     private void buscarNodo() {
         String nombre = campoBusqueda.getText().trim();
         if (nombre.isEmpty()) {
@@ -190,9 +187,10 @@ public class InterfazInteractuar extends javax.swing.JFrame implements ViewerLis
             }
         }
         }
-    
-    
 
+    /**
+     * Carga un &aacute;rbol geneal&oacute;gico desde un archivo JSON seleccionado por el usuario.
+     */
     private void cargarArbolDesdeJSON() {
         JFileChooser selectorArchivo = new JFileChooser();
         int opcion = selectorArchivo.showOpenDialog(this);
@@ -208,18 +206,10 @@ public class InterfazInteractuar extends javax.swing.JFrame implements ViewerLis
         }
     }
 
-    /* JFileChooser fileChooser = new JFileChooser();
-        int result = fileChooser.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            String filePath = fileChooser.getSelectedFile().getAbsolutePath();
-            arbol.cargarDesdeJSON(filePath);
-            mostrarGrafo();
-    }
-        } */
-
+    /**
+     * Muestra el grafo del &aacute;rbol geneal&oacute;gico en el panel gr&aacute;fico.
+     */
    private void mostrarGrafo() {
-       
-       //graphPanel.removeAll();
         System.setProperty("org.graphstream.ui", "swing");
         Graph graph = new SingleGraph("Árbol Genealógico");
         graph.setAttribute("ui.stylesheet", "graph { fill-color: #EEE; }");
@@ -231,22 +221,12 @@ public class InterfazInteractuar extends javax.swing.JFrame implements ViewerLis
         graphPanel.revalidate();
         graphPanel.repaint();
     } 
-
-//    public void buttonPushed(String id) {
-//        Nodo nodo = arbol.buscarNodoPorNombre(id);
-//        if (nodo != null) {
-//            infoTextArea.setText(nodo.mostrarInformacion());
-//        }
-//    }
-
-//    public void buttonReleased(String id) {
-//        
-//    }
-// 
-//    public void viewClosed(String viewName) {
-//        
-//    }
     
+   /**
+     * Maneja el evento cuando el mouse abandona un nodo del grafo.
+     *
+     * @param eventDetails Detalles del evento del mouse.
+     */
     public void mouseLeft(String eventDetails) {
         
     } 
@@ -266,20 +246,12 @@ public class InterfazInteractuar extends javax.swing.JFrame implements ViewerLis
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
         getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(283, 68, -1, -1));
-
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
-
-        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(77, 146, -1, -1));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -321,8 +293,6 @@ public class InterfazInteractuar extends javax.swing.JFrame implements ViewerLis
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables
 
     @Override
